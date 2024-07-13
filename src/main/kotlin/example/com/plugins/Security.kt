@@ -1,55 +1,88 @@
 package example.com.plugins
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
-import io.ktor.client.*
-import io.ktor.client.engine.apache.*
-import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
+import example.com.dao.user.UserDao
+import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
+import kotlinx.serialization.Serializable
+import org.koin.ktor.ext.inject
+
+private val jwtAudience = System.getenv("jwtAudience")
+private val jwtIssuer = System.getenv("jwtIssuer")
+private val jwtSecret = System.getenv("jwtSecret")
+
+private const val CLAIM = "email"
 
 fun Application.configureSecurity() {
-    authentication {
-            oauth("auth-oauth-google") {
-                urlProvider = { "http://localhost:8080/callback" }
-                providerLookup = {
-                    OAuthServerSettings.OAuth2ServerSettings(
-                        name = "google",
-                        authorizeUrl = "https://accounts.google.com/o/oauth2/auth",
-                        accessTokenUrl = "https://accounts.google.com/o/oauth2/token",
-                        requestMethod = HttpMethod.Post,
-                        clientId = System.getenv("GOOGLE_CLIENT_ID"),
-                        clientSecret = System.getenv("GOOGLE_CLIENT_SECRET"),
-                        defaultScopes = listOf("https://www.googleapis.com/auth/userinfo.profile")
-                    )
-                }
-                client = HttpClient(Apache)
-            }
-        }
-    // Please read the jwt property from the config file if you are using EngineMain
-    val jwtAudience = "jwt-audience"
-    val jwtDomain = "https://jwt-provider-domain/"
-    val jwtRealm = "ktor sample app"
-    val jwtSecret = "secret"
+    val userDao by inject<UserDao>()
+
     authentication {
         jwt {
-            realm = jwtRealm
+
             verifier(
                 JWT
                     .require(Algorithm.HMAC256(jwtSecret))
                     .withAudience(jwtAudience)
-                    .withIssuer(jwtDomain)
+                    .withIssuer(jwtIssuer)
                     .build()
             )
             validate { credential ->
-                if (credential.payload.audience.contains(jwtAudience)) JWTPrincipal(credential.payload) else null
+                if (credential.payload.getClaim(CLAIM).asString() != null) {
+                    val userExists = userDao.findByEmail(email = credential.payload.getClaim(CLAIM).asString()) != null
+                    val isValidAudience = credential.payload.audience.contains(jwtAudience)
+                    if (userExists && isValidAudience) {
+                        JWTPrincipal(payload = credential.payload)
+                    } else {
+                        null
+                    }
+                } else {
+                    null
+                }
+            }
+
+            challenge { _, _ ->
+                call.respond(
+                    status = HttpStatusCode.Unauthorized,
+                    message = AuthResponse(
+                        errorMessage = "Token is not valid or has expired"
+                    )
+                )
             }
         }
     }
-    routing {
-    }
 }
+
+fun generateToken(email: String): String {
+    return JWT.create()
+        .withAudience(jwtAudience)
+        .withIssuer(jwtIssuer)
+        .withClaim(CLAIM, email)
+        //.withExpiresAt()
+        .sign(Algorithm.HMAC256(jwtSecret))
+}
+
+
+
+
+@Serializable
+data class AuthResponse(
+    val data : AuthResponseData? = null,
+    val errorMessage:  String? = null
+)
+
+@Serializable
+data class AuthResponseData(
+    val id: Long,
+    val name: String,
+    val bio: String,
+    val avatar: String? = null,
+    val token: String,
+)
+
+
+
+

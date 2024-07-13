@@ -4,7 +4,9 @@ val logback_version: String by project
 val exposed_version: String by project
 val h2_version: String by project
 val postgres_version: String by project
-
+val ktor_version: String by project
+val koin_version: String by project
+val hikaricp_version: String by project
 plugins {
     kotlin("jvm") version "2.0.0"
     id("io.ktor.plugin") version "2.3.12"
@@ -44,4 +46,10 @@ dependencies {
     implementation("io.ktor:ktor-server-config-yaml")
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    implementation("com.zaxxer:HikariCP:$hikaricp_version")
+    implementation("io.insert-koin:koin-ktor:$koin_version")
+
+    implementation("de.mkammerer.snowflake-id:snowflake-id:0.0.2")
+    implementation("org.jetbrains.exposed:exposed-java-time:$exposed_version")
+
 }
