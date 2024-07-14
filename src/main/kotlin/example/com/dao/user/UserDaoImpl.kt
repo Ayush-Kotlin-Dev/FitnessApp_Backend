@@ -13,7 +13,7 @@ class UserDaoImpl : UserDao {
     override suspend fun insert(params: SignUpParams): UserRow? {
         return dbQuery {
             val insertStatement = UserTable.insert {
-                it[id] = IdGenerator.generateId()
+                it[userId] = IdGenerator.generateId()
                 it[userName] = params.userName
                 it[email] = params.email
                 it[password] = hashPassword(params.password)
@@ -39,7 +39,7 @@ class UserDaoImpl : UserDao {
                 it[dietaryPreferences] = userInfo.dietaryPreferences
                 it[workoutPreferences] = userInfo.workoutPreferences
             }
-            UserTable.update(where = { UserTable.id eq userInfo.userId }) {
+            UserTable.update(where = { UserTable.userId eq userInfo.userId }) {
                 it[is_form_filled] = true
             }
 
@@ -59,7 +59,7 @@ class UserDaoImpl : UserDao {
 
     override suspend fun findById(userId: Long): UserRow? {
         return dbQuery {
-            UserTable.select { UserTable.id eq userId }
+            UserTable.select { UserTable.userId eq userId }
                 .map { rowToUser(it) }
                 .singleOrNull()
         }
@@ -67,7 +67,7 @@ class UserDaoImpl : UserDao {
 
     override suspend fun updateUser(userId: Long, name: String, bio: String, imageUrl: String?): Boolean {
         return dbQuery {
-            UserTable.update(where = { UserTable.id eq userId }) {
+            UserTable.update(where = { UserTable.userId eq userId }) {
                 it[userName] = name
                 it[UserTable.bio] = bio
                 it[UserTable.imageUrl] = imageUrl
@@ -93,7 +93,7 @@ class UserDaoImpl : UserDao {
 
     override suspend fun getUsers(ids: List<Long>): List<UserRow> {
         return dbQuery {
-            UserTable.select(where = { UserTable.id inList ids })
+            UserTable.select(where = { UserTable.userId inList ids })
                 .map { rowToUser(it) }
         }
     }
@@ -102,7 +102,7 @@ class UserDaoImpl : UserDao {
 
 private fun rowToUser(row: ResultRow): UserRow {
     return UserRow(
-        id = row[UserTable.id],
+        id = row[UserTable.userId],
         userName = row[UserTable.userName],
         bio = row[UserTable.bio],
         imageUrl = row[UserTable.imageUrl],
