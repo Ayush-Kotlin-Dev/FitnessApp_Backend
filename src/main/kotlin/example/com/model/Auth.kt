@@ -22,7 +22,8 @@ data class User(
     val userName: String,
     val email: String,
     val bio : String ,
-    val token: String
+    val token: String,
+    val isFormFilled: Boolean = false
 )
 
 

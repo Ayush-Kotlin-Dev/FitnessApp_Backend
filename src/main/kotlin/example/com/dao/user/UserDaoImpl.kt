@@ -108,6 +108,7 @@ private fun rowToUser(row: ResultRow): UserRow {
         imageUrl = row[UserTable.imageUrl],
         password = row[UserTable.password],
         email = row[UserTable.email],
+        isFormFilled = row[UserTable.is_form_filled]
     )
 }
 

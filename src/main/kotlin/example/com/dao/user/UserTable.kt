@@ -24,6 +24,7 @@ data class UserRow(
     val bio: String,
     val imageUrl: String?,
     val password: String,
+    val isFormFilled: Boolean
     //TODO
     //Token : String //Will implement later for Payload functionality
 )
