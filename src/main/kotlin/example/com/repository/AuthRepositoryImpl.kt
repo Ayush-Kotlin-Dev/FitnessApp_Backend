@@ -4,6 +4,7 @@ import example.com.dao.user.UserDao
 import example.com.model.*
 import example.com.util.Response
 import example.com.plugins.generateToken
+import example.com.plugins.hashPassword
 import io.ktor.http.*
 
 class AuthRepositoryImpl(
@@ -34,7 +35,8 @@ class AuthRepositoryImpl(
                             userId = insertedUser.id,
                             userName = insertedUser.userName,
                             token = generateToken(signUpParams.email),
-                            email = insertedUser.email
+                            email = insertedUser.email,
+                            bio =  insertedUser.bio
                         )
                     )
                 )
@@ -54,7 +56,8 @@ class AuthRepositoryImpl(
                 )
             )
         } else {
-            if (user.password != signInParams.password) {
+            val hashedPassword = hashPassword(signInParams.password)
+            if (user.password != hashedPassword) {
                 Response.Error(
                     code = HttpStatusCode.NotFound,
                     data = AuthResponseData(
@@ -68,7 +71,8 @@ class AuthRepositoryImpl(
                             userId = user.id,
                             userName = user.userName,
                             token = generateToken(signInParams.email),
-                            email = user.email
+                            email = user.email,
+                            bio = user.bio
                         )
                     )
                 )

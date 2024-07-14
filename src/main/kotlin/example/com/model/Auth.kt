@@ -21,6 +21,7 @@ data class User(
     val userId: Long,
     val userName: String,
     val email: String,
+    val bio : String ,
     val token: String
 )
 
