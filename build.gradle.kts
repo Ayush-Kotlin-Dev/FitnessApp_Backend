@@ -53,3 +53,19 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-java-time:$exposed_version")
 
 }
+tasks.withType<org.gradle.jvm.tasks.Jar>() {
+    exclude("META-INF/BC1024KE.RSA", "META-INF/BC1024KE.SF", "META-INF/BC1024KE.DSA")
+    exclude("META-INF/BC2048KE.RSA", "META-INF/BC2048KE.SF", "META-INF/BC2048KE.DSA")
+}
+tasks.register<Jar>("fatJar") {
+    archiveClassifier.set("all")
+    from(configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) })
+    exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
+    manifest {
+        attributes["Main-Class"] = "example.com.ApplicationKt"
+    }
+    from(*configurations.runtimeClasspath.get().filter { it.exists() }
+        .map { if (it.isDirectory) it else zipTree(it) }.toTypedArray())
+    with(tasks.getByName("jar") as CopySpec)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
