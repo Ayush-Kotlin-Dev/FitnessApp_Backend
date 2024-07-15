@@ -7,6 +7,11 @@ import io.ktor.server.routing.*
 
 fun Application.configureRouting() {
     routing {
+        route("/") {
+            get {
+                call.respondText("Hello Users this is Ayush!")
+            }
+        }
         authRouting()
     }
 }
