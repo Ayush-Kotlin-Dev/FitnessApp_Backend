@@ -27,25 +27,37 @@ class UserDaoImpl : UserDao {
 
     override suspend fun insertUserInfo(userInfo: UserInfo): UserInfo? {
         return dbQuery {
-            val insertStatement = User_InfoTable.insert {
-                it[userId] = userInfo.userId
-                it[fullName] = userInfo.fullName
-                it[age] = userInfo.age
-                it[gender] = userInfo.gender
-                it[height] = userInfo.height
-                it[weight] = userInfo.weight
-                it[fitnessGoals] = userInfo.fitnessGoals
-                it[activityLevel] = userInfo.activityLevel
-                it[dietaryPreferences] = userInfo.dietaryPreferences
-                it[workoutPreferences] = userInfo.workoutPreferences
-            }
-            UserTable.update(where = { UserTable.userId eq userInfo.userId }) {
-                it[is_form_filled] = true
+            val isFormAlreadyFilled = UserTable.select { UserTable.userId eq userInfo.userId }
+                .map { it[UserTable.is_form_filled] }
+                .singleOrNull()
+
+            if (isFormAlreadyFilled == false) {
+                val insertStatement = User_InfoTable.insert {
+                    it[userId] = userInfo.userId
+                    it[fullName] = userInfo.fullName
+                    it[age] = userInfo.age
+                    it[gender] = userInfo.gender
+                    it[height] = userInfo.height
+                    it[weight] = userInfo.weight
+                    it[fitnessGoals] = userInfo.fitnessGoals
+                    it[activityLevel] = userInfo.activityLevel
+                    it[dietaryPreferences] = userInfo.dietaryPreferences
+                    it[workoutPreferences] = userInfo.workoutPreferences
+                }
+                UserTable.update(where = { UserTable.userId eq userInfo.userId }) {
+                    it[is_form_filled] = true
+                }
+
+                insertStatement.resultedValues?.singleOrNull()?.let {
+                    rowToUserInfo(it)
+                }
+            }else{
+                //return the user info if the form is already filled
+                User_InfoTable.select { User_InfoTable.userId eq userInfo.userId }
+                    .map { rowToUserInfo(it) }
+                    .singleOrNull()
             }
 
-            insertStatement.resultedValues?.singleOrNull()?.let {
-                rowToUserInfo(it)
-            }
         }
     }
 
