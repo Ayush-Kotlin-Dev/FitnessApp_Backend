@@ -51,7 +51,6 @@ fun Routing.authRouting(){
                         errorMessage = "Invalid credentials!"
                     )
                 )
-
                 return@post
             }
 

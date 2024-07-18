@@ -14,4 +14,7 @@ object User_InfoTable: Table(name = "user_info"){
     val activityLevel = varchar("activity_level", 255)
     val dietaryPreferences = varchar("dietary_preferences", 255)
     val workoutPreferences = varchar("workout_preferences", 255)
+
+    override val primaryKey: PrimaryKey
+        get() = PrimaryKey(UserTable.userId)
 }

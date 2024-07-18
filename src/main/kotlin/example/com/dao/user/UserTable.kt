@@ -1,5 +1,6 @@
 package example.com.dao.user
 
+import example.com.model.UserInfo
 import org.jetbrains.exposed.sql.Table
 
 object UserTable: Table(name = "users"){
@@ -24,7 +25,8 @@ data class UserRow(
     val bio: String,
     val imageUrl: String?,
     val password: String,
-    val isFormFilled: Boolean
+    val isFormFilled: Boolean,
+    val userInfo: UserInfo? = null
     //TODO
     //Token : String //Will implement later for Payload functionality
 )

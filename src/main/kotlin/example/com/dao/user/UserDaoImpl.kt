@@ -57,10 +57,19 @@ class UserDaoImpl : UserDao {
         }
     }
 
+    //No use for now
     override suspend fun findById(userId: Long): UserRow? {
         return dbQuery {
             UserTable.select { UserTable.userId eq userId }
                 .map { rowToUser(it) }
+                .singleOrNull()
+        }
+    }
+
+    override suspend fun getUserInfo(userId: Long): UserInfo? {
+        return dbQuery {
+            User_InfoTable.select { User_InfoTable.userId eq userId }
+                .map { rowToUserInfo(it) }
                 .singleOrNull()
         }
     }
@@ -75,9 +84,9 @@ class UserDaoImpl : UserDao {
         }
     }
 
-    override suspend fun updateUser(userId: Long, userInfo: UserInfo): Boolean {
+    override suspend fun updateUserInfo( userInfo: UserInfo): Boolean {
         return dbQuery {
-            User_InfoTable.update(where = { User_InfoTable.userId eq userId }) {
+            User_InfoTable.update(where = { User_InfoTable.userId eq userInfo.userId }) {
                 it[fullName] = userInfo.fullName
                 it[age] = userInfo.age
                 it[gender] = userInfo.gender
@@ -91,6 +100,7 @@ class UserDaoImpl : UserDao {
         }
     }
 
+    //No use for now
     override suspend fun getUsers(ids: List<Long>): List<UserRow> {
         return dbQuery {
             UserTable.select(where = { UserTable.userId inList ids })

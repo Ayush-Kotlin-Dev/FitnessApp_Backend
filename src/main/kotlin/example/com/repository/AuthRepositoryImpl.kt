@@ -36,7 +36,7 @@ class AuthRepositoryImpl(
                             userName = insertedUser.userName,
                             token = generateToken(signUpParams.email),
                             email = insertedUser.email,
-                            bio =  insertedUser.bio,
+                            bio = insertedUser.bio,
                             isFormFilled = insertedUser.isFormFilled
                         )
                     )
